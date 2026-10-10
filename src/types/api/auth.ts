@@ -1,5 +1,7 @@
 import { ApiResponse } from './api';
 
+export type Role = 'ADMIN' | 'USER';
+
 export interface SignInPayload {
   email: string;
   password: string;
@@ -17,12 +19,20 @@ export interface SignOutPayload {
   password: string;
 }
 
+export interface AuthUser {
+  id: string;
+  firstName: string;
+  lastName: string;
+  email: string;
+  role: Role;
+}
+
 export interface AuthResponse extends ApiResponse<{
   token: string;
-  user: { id: string; email: string; name: string };
+  user: AuthUser;
 }> {
   token: string;
-  user: { id: string; email: string; name: string };
+  user: AuthUser;
 }
 
 export interface AuthError extends ApiResponse<never> {

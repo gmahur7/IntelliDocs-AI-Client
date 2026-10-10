@@ -1,39 +1,31 @@
 import { NextResponse } from 'next/server';
 import type { NextRequest } from 'next/server';
+import { getRoleFromCookie } from '@/lib/auth/session';
+import { AUTH_ROUTES, ROLE_HOME, matches, routeRole } from '@/lib/auth/routes';
+import { TOKEN_KEY } from '@/lib/auth/token';
 
-const AUTH_COOKIE = 'auth_token';
-
-const PROTECTED_ROUTES = ['/dashboard'];
-const AUTH_ROUTES = ['/sign-in', '/sign-up'];
-
-function matches(pathname: string, routes: string[]): boolean {
-  return routes.some((route) => pathname === route || pathname.startsWith(`${route}/`));
-}
-
-export function proxy(request: NextRequest) {
+export async function proxy(request: NextRequest) {
   const { pathname } = request.nextUrl;
-  const isLoggedIn = request.cookies.has(AUTH_COOKIE);
+  const hasCookie = request.cookies.has(TOKEN_KEY);
+  const role = await getRoleFromCookie(request.cookies.get(TOKEN_KEY)?.value);
 
-  if (pathname === '/') {
-    const url = request.nextUrl.clone();
-    url.pathname = isLoggedIn ? '/dashboard' : '/sign-in';
-    return NextResponse.redirect(url);
-  }
-  if (matches(pathname, PROTECTED_ROUTES) && !isLoggedIn) {
-    const url = request.nextUrl.clone();
-    url.pathname = '/sign-in';
-    return NextResponse.redirect(url);
+  const redirect = (path: string) => {
+    const response = NextResponse.redirect(new URL(path, request.url));
+    if (hasCookie && !role) response.cookies.delete(TOKEN_KEY);
+    return response;
+  };
+
+  if (matches(pathname, AUTH_ROUTES)) {
+    return role ? redirect(ROLE_HOME[role]) : NextResponse.next();
   }
 
-  if (matches(pathname, AUTH_ROUTES) && isLoggedIn) {
-    const url = request.nextUrl.clone();
-    url.pathname = '/dashboard';
-    return NextResponse.redirect(url);
-  }
+  if (!role) return redirect('/sign-in');
+  if (routeRole(pathname) !== role) return redirect(ROLE_HOME[role]);
 
   return NextResponse.next();
 }
 
 export const config = {
-  matcher: ['/', '/dashboard/:path*', '/sign-in', '/sign-up'],
+  // Every page route; skip API routes, Next internals and static files.
+  matcher: ['/((?!api|_next/static|_next/image|favicon.ico|sitemap.xml|robots.txt|.*\\..*).*)'],
 };

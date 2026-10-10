@@ -15,6 +15,7 @@ import { useSignIn } from '@/hooks/useSignIn';
 import { type SignInFormValues, signInSchema } from '@/lib/validators/auth';
 import { AuthError } from '@/types/api/auth';
 import { useRouter } from 'next/navigation';
+import { ROLE_HOME } from '@/lib/auth/routes';
 
 export function SignInForm({ className, ...props }: React.ComponentProps<'form'>) {
   const router = useRouter();
@@ -36,8 +37,8 @@ export function SignInForm({ className, ...props }: React.ComponentProps<'form'>
       onError: (err: AuthError) => {
         setError('root.serverError', { message: err.message });
       },
-      onSuccess: () => {
-        router.push('/dashboard');
+      onSuccess: (data) => {
+        router.push(ROLE_HOME[data.user.role] ?? '/');
       },
     });
   }

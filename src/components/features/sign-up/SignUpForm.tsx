@@ -15,6 +15,7 @@ import { standardSchemaResolver } from '@hookform/resolvers/standard-schema';
 import { useSignUp } from '@/hooks/useSignup';
 import { AuthError } from '@/types/api/auth';
 import { useRouter } from 'next/navigation';
+import { ROLE_HOME } from '@/lib/auth/routes';
 
 export function SignupForm({ className, ...props }: React.ComponentProps<'form'>) {
   const router = useRouter();
@@ -41,8 +42,8 @@ export function SignupForm({ className, ...props }: React.ComponentProps<'form'>
       onError: (err: AuthError) => {
         setError('root.serverError', { message: err.message });
       },
-      onSuccess: () => {
-        router.push('/dashboard');
+      onSuccess: (data) => {
+        router.push(ROLE_HOME[data.user.role]);
       },
     });
   }
