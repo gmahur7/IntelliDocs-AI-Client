@@ -13,11 +13,10 @@ import { useForm } from 'react-hook-form';
 import { SignUpFormValues, signUpSchema } from '@/lib/validators/auth';
 import { standardSchemaResolver } from '@hookform/resolvers/standard-schema';
 import { useSignUp } from '@/hooks/useSignup';
-import { AuthError } from '@/types/api/auth';
-import { useRouter } from 'next/navigation';
+import Link from 'next/link';
+import type { ApiError } from '@/lib/http';
 
 export function SignupForm({ className, ...props }: React.ComponentProps<'form'>) {
-  const router = useRouter();
   const {
     register,
     handleSubmit,
@@ -38,12 +37,7 @@ export function SignupForm({ className, ...props }: React.ComponentProps<'form'>
 
   function onSubmit(data: SignUpFormValues) {
     mutate(data, {
-      onError: (err: AuthError) => {
-        setError('root.serverError', { message: err.message });
-      },
-      onSuccess: () => {
-        router.push('/dashboard');
-      },
+      onError: (err: ApiError) => setError('root.serverError', { message: err.message }),
     });
   }
 
@@ -65,7 +59,13 @@ export function SignupForm({ className, ...props }: React.ComponentProps<'form'>
         <div className="flex gap-2">
           <div>
             <FieldLabel htmlFor="firstName">First Name</FieldLabel>
-            <Input id="name" type="text" placeholder="John" {...register('firstName')} required />
+            <Input
+              id="firstName"
+              type="text"
+              placeholder="John"
+              {...register('firstName')}
+              required
+            />
             {errors.firstName && (
               <FieldDescription className="text-destructive">
                 {errors.firstName.message}
@@ -108,9 +108,15 @@ export function SignupForm({ className, ...props }: React.ComponentProps<'form'>
           )}
         </Field>
         <Field>
-          <FieldLabel htmlFor="confirm-password">Confirm Password</FieldLabel>
-          <Input id="confirm-password" type="password" required />
-          <FieldDescription>Please confirm your password.</FieldDescription>
+          <FieldLabel htmlFor="confirmPassword">Confirm Password</FieldLabel>
+          <Input id="confirmPassword" type="password" {...register('confirmPassword')} required />
+          {errors.confirmPassword ? (
+            <FieldDescription className="text-destructive">
+              {errors.confirmPassword.message}
+            </FieldDescription>
+          ) : (
+            <FieldDescription>Please confirm your password.</FieldDescription>
+          )}
         </Field>
         <Field>
           <Button type="submit" disabled={isLoading}>
@@ -129,7 +135,10 @@ export function SignupForm({ className, ...props }: React.ComponentProps<'form'>
             Sign up with GitHub
           </Button>
           <FieldDescription className="px-6 text-center">
-            Already have an account? <a href="#">Sign in</a>
+            Already have an account?{' '}
+            <Link href="/sign-in" className="underline underline-offset-4">
+              Sign in
+            </Link>
           </FieldDescription>
         </Field>
       </FieldGroup>

@@ -1,21 +1,30 @@
-import http from '@/lib/http';
-import { ApiResponse } from '@/types/api/api';
-import { AuthError, AuthResponse, SignUpPayload } from '@/types/api/auth';
-import { useMutation } from '@tanstack/react-query';
+'use client';
+
+import { signUpAction } from '@/lib/auth/actions';
+import { HOME } from '@/lib/auth/routes';
+import { ApiError } from '@/lib/http';
+import { meQueryOptions } from '@/lib/react-query/queries/auth';
+import { SignUpPayload, User } from '@/types/api/auth';
+import { useMutation, useQueryClient } from '@tanstack/react-query';
+import { useRouter } from 'next/navigation';
 
 export function useSignUp() {
-  return useMutation<AuthResponse, AuthError, SignUpPayload>({
-    mutationFn: async ({ email, password, firstName, lastName }) => {
-      const response = await http.post<ApiResponse<AuthResponse>>('/auth/sign-up', {
-        email,
-        password,
-        firstName,
-        lastName,
-      });
-      if (!response?.data?.isSuccess) {
-        throw new Error(response?.data?.error?.message || 'Failed to sign up');
-      }
-      return response.data.data;
+  const queryClient = useQueryClient();
+  const router = useRouter();
+  return useMutation<User, ApiError, SignUpPayload>({
+    mutationFn: async (input: {
+      email: string;
+      password: string;
+      firstName: string;
+      lastName: string;
+    }) => {
+      const result = await signUpAction(input);
+      if (!result.ok) throw new ApiError(result.status, result.message);
+      return result.user;
+    },
+    onSuccess: (user) => {
+      queryClient.setQueryData(meQueryOptions.queryKey, user);
+      router.push(HOME[user.role]);
     },
   });
 }

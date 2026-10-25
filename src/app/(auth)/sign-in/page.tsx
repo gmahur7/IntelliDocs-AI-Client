@@ -1,11 +1,12 @@
-'use client';
 import { GalleryVerticalEnd } from 'lucide-react';
-import { useForm } from 'react-hook-form';
-import { useSignIn } from '@/hooks/useSignIn';
-
 import { SignInForm } from '@/components/features/sign-in/SignInForm';
 
-export default function SignInPage() {
+export default async function SignInPage({
+  searchParams,
+}: {
+  searchParams: Promise<{ reason?: string }>;
+}) {
+  const { reason } = await searchParams;
   return (
     <div className="grid min-h-svh lg:grid-cols-2">
       <div className="relative hidden bg-muted lg:block">
@@ -26,6 +27,11 @@ export default function SignInPage() {
         </div>
         <div className="flex flex-1 items-center justify-center">
           <div className="w-full max-w-xs">
+            {reason === 'expired' && (
+              <p className="text-muted-foreground mb-4 text-center text-sm">
+                Your session expired. Please sign in again.
+              </p>
+            )}
             <SignInForm />
           </div>
         </div>

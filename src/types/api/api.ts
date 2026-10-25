@@ -1,10 +1,19 @@
-export interface ApiResponse<T> {
-  isSuccess: boolean;
-  data: T;
-  error?: ApiError;
+export interface ApiErrorBody {
+  message: string;
+  details?: unknown;
 }
 
-export interface ApiError {
-  message: string;
-  statusCode: number;
+export interface ApiSuccess<T> {
+  isSuccess: true;
+  status: number;
+  message?: string;
+  data: T;
 }
+
+export interface ApiFailure {
+  isSuccess: false;
+  status: number;
+  error: ApiErrorBody;
+}
+
+export type ApiResponse<T> = ApiSuccess<T> | ApiFailure;

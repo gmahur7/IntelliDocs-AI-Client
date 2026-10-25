@@ -13,11 +13,10 @@ import { useForm } from 'react-hook-form';
 import { standardSchemaResolver } from '@hookform/resolvers/standard-schema';
 import { useSignIn } from '@/hooks/useSignIn';
 import { type SignInFormValues, signInSchema } from '@/lib/validators/auth';
-import { AuthError } from '@/types/api/auth';
-import { useRouter } from 'next/navigation';
+import Link from 'next/link';
+import type { ApiError } from '@/lib/http';
 
 export function SignInForm({ className, ...props }: React.ComponentProps<'form'>) {
-  const router = useRouter();
   const {
     register,
     handleSubmit,
@@ -33,12 +32,8 @@ export function SignInForm({ className, ...props }: React.ComponentProps<'form'>
 
   function onSubmit(data: SignInFormValues) {
     mutate(data, {
-      onError: (err: AuthError) => {
-        setError('root.serverError', { message: err.message });
-      },
-      onSuccess: () => {
-        router.push('/dashboard');
-      },
+      onError: (err: ApiError) => setError('root.serverError', { message: err.message }),
+      onSuccess: () => {},
     });
   }
 
@@ -93,6 +88,11 @@ export function SignInForm({ className, ...props }: React.ComponentProps<'form'>
             </FieldDescription>
           )}
         </Field>
+        {errors.root?.serverError && (
+          <FieldDescription className="text-destructive text-center">
+            {errors.root.serverError.message}
+          </FieldDescription>
+        )}
         <Field>
           <Button type="submit" disabled={isLoading}>
             {isLoading ? 'Signing in…' : 'Login'}
@@ -111,9 +111,9 @@ export function SignInForm({ className, ...props }: React.ComponentProps<'form'>
           </Button>
           <FieldDescription className="text-center">
             Don&apos;t have an account?{' '}
-            <a href="#" className="underline underline-offset-4">
+            <Link href="/sign-up" className="underline underline-offset-4">
               Sign up
-            </a>
+            </Link>
           </FieldDescription>
         </Field>
       </FieldGroup>
