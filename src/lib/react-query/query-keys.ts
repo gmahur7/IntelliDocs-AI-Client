@@ -11,3 +11,10 @@ export const authQueryKeys = {
   signInWithTwitter: () => [...authQueryKeys.all, 'signInWithTwitter'] as const,
   signInWithFacebook: () => [...authQueryKeys.all, 'signInWithFacebook'] as const,
 } as const;
+
+export const conversationQueryKeys = {
+  all: ['conversation'] as const,
+  getConversations: () => [...conversationQueryKeys.all, 'getConversations'] as const,
+  getConversationWithMessages: (conversationId: string) =>
+    [...conversationQueryKeys.all, 'getConversationWithMessages', conversationId] as const,
+};

@@ -24,6 +24,7 @@ import {
   SidebarRail,
 } from '@/components/ui/sidebar';
 import { useMe } from '@/hooks/useMe';
+import { useGetConversations } from '@/hooks/useConversations';
 
 // This is sample data.
 const data = {
@@ -147,13 +148,14 @@ const data = {
 
 export function AppSidebar({ ...props }: React.ComponentProps<typeof Sidebar>) {
   const { data: user } = useMe();
+  const { data: conversations } = useGetConversations();
   return (
     <Sidebar collapsible="icon" {...props}>
       <SidebarHeader>
         <TeamSwitcher teams={data.teams} />
       </SidebarHeader>
       <SidebarContent>
-        <NavMain items={data.navMain} />
+        <NavMain items={conversations} />
         {/* <NavProjects projects={data.projects} /> */}
       </SidebarContent>
       <SidebarFooter>
